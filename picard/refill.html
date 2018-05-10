@@ -1,0 +1,84 @@
+<html>
+<head>
+<h1>REFILL PILLS</h1>
+<style>
+body {background-color:#1E90FF;}
+h1{background-color: #0000CD;color:white}
+img{float:right}
+input.p{
+width:28;
+height:28;
+}
+input.m{
+height:50;
+}
+input.q{};
+</style>
+</head>
+<body>
+<form>
+<input type="number" class="q" max="30" id="p" defaultValue="0" /><br/><a href="caregiver.html"><img src="last page.png" width="50" height="60" ondragstart="return false"></a>
+<input type="button" class="p" value="0" id="0" onclick="password('0')">
+<input type="button" class="p" value="1" id="1" onclick="password('1')">
+<input type="button" class="p" value="2" id="2" onclick="password('2')">
+<input type="button" class="p" value="3" id="3" onclick="password('3')">
+<input type="button" class="p" value="4" id="4" onclick="password('4')">
+<input type="button" class="m" value="Confirm" onclick="refill()"><br/>
+<input type="button" class="p" value="5" id="5" onclick="password('5')">
+<input type="button" class="p" value="6" id="6" onclick="password('6')">
+<input type="button" class="p" value="7" id="7" onclick="password('7')">
+<input type="button" class="p" value="8" id="8" onclick="password('8')">
+<input type="button" class="p" value="9" id="9" onclick="password('9')">
+</form>
+<SCRIPT> 
+var fs = require('fs'); 
+var pills_add;
+
+function servo(){
+var Gpio = require('pigpio').Gpio,
+  motor = new Gpio(17, {mode: Gpio.OUTPUT}),
+  pulseWidth = 1850,
+  b=250;
+
+setTimeout(function(){
+  motor.servoWrite(pulseWidth)
+  console.log(pulseWidth)
+},0);
+  
+setTimeout(function(){
+  pulseWidth=pulseWidth-b
+  motor.servoWrite(pulseWidth)
+  console.log(pulseWidth)
+},1000);
+}
+
+servo();
+
+function password(z){
+    document.getElementById("p").value=document.getElementById("p").value+document.getElementById(z).value
+}
+
+fs.readFile('pills_added.txt',function(err,data){
+  if(err){
+   console.error(err)
+}
+  else{
+    pills_add=parseInt(data);
+}
+}) 
+
+function refill(){
+    var time=Date();
+    var a=parseInt(document.getElementById("p").value)
+    if(a<=30){
+    pills_add=pills_add+a;
+    fs.writeFile('pills_added.txt',pills_add);
+    window.location.href="caregiver.html";
+}else{
+    alert("you can only add 30 pills or less");
+    document.getElementById("p").value=null;
+}
+}
+</SCRIPT> 
+</body>
+</html>

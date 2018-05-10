@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<h1>USAGE INFO</h1>
+<style>
+h1{background-color: #0000CD;color:white}
+body {background-color:#1E90FF;}
+img{float:right}
+</style>
+</head>
+<body>
+<SCRIPT > 
+var fs=require('fs');
+var pills_dis;
+var pills_add;
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'picardtest.c2idm5yxdsto.us-west-1.rds.amazonaws.com',
+  port     : '3306',
+  user     : 'picard',
+  password : 'p1card2016',
+  database : 'picard',
+});
+
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+  console.log('connected as id ' + connection.threadId);
+});
+
+fs.readFile('last used.txt','utf-8',function(err,data){
+  if(err){
+   console.error(err)
+}
+  else{
+    document.getElementById('last').innerHTML=data
+}
+}) 
+fs.readFile('pills dispenced.txt','utf-8',function(err,data){
+  if(err){
+   console.error(err)
+}
+  else{
+    pills_dis=parseInt(data);
+    document.getElementById('total').innerHTML=data;
+}
+}) 
+
+fs.readFile('pills_added.txt','utf-8',function(err,data){
+  if(err){
+   console.error(err)
+}
+  else{
+    pills_add=parseInt(data);
+    document.getElementById('left').innerHTML=pills_add-pills_dis;
+    connection.query('UPDATE pillbottle_pillbottleinfo SET remaining_pill=? WHERE id=1',[pills_add-pills_dis], function (error, results, fields) {
+    if (error) throw error;
+    console.log('The update is successful');
+});
+
+connection.end(function(err) {
+  // The connection is terminated now
+});
+}
+}) 
+
+
+</SCRIPT> 
+Remaining Pills :<p1 id="left"></p1><br/>
+Start Date :<p2 id=""></p2>Mon Aug 28 2017<br/><a href="Menu.html"><img src="last page.png" width="50" height="60" ondragstart="return false"></a>
+Total pills dispensed :<p3 id="total"></p3><br/>
+Last Used :<p4 id="last"></p4><br/>
+Unauthorized attempts :<p5 id="">No</p5><br/>
+<p7><a href="attention.html">Attention</a></p7><br/>
+<p6><a href="usage report.html">Usage Report</a></p6>
+</body>
+</html>

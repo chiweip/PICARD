@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<h1>DRUG INFO</h1>
+<style>
+img{float:right}
+h1 {background-color: #0000CD;color:white;}
+body {background-color:#1E90FF;}
+</style>
+</head>
+<body>
+<SCRIPT > 
+var events = require('events'); 
+var emitter = new events.EventEmitter(); 
+var fs = require('fs'); 
+var pills_dis;
+var maxtime=20;
+var dosage=2;
+var i;
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'picardtest.c2idm5yxdsto.us-west-1.rds.amazonaws.com',
+  port     : '3306',
+  user     : 'picard',
+  password : 'p1card2016',
+  database : 'picard',
+});
+
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+  console.log('connected as id ' + connection.threadId);
+});
+
+connection.query('SELECT * FROM prescription WHERE id=1', function (error, results, fields) {
+  if (error) throw error;
+  maxtime=results[0].period*3600;
+    document.getElementById('instr') = results[0].instruction;
+    document.getElementById('drug') = results[0].drugtype;
+    dosage=results[0].dosage;
+});
+
+fs.readFile('pills dispenced.txt',function(err,data){
+  if(err){
+   console.error(err)
+}
+  else{
+    pills_dis=parseInt(data)
+}
+}) 
+
+
+function servo(){
+var Gpio = require('pigpio').Gpio,
+  motor = new Gpio(17, {mode: Gpio.OUTPUT}),
+  pulseWidth = 1150,
+  b=450;
+
+setTimeout(function(){
+  motor.servoWrite(pulseWidth)
+  console.log(pulseWidth)
+},0);
+  
+setTimeout(function(){
+  pulseWidth=pulseWidth+b
+  motor.servoWrite(pulseWidth)
+  console.log(pulseWidth)
+},1000);
+}
+
+function fpidentify(i){
+//1.need FP identification and verification
+//2.need button1.js to detect pusher movements
+//3.run following code
+    var last_use=Date(); 
+    pills_dis=pills_dis+1;
+    emitter.on(servo(), function(arg) { 
+    fs.writeFile('pills dispenced.txt',pills_dis);
+    fs.writeFile('last used.txt',last_use);
+    fs.appendFile('Used time.txt',last_use+";  ");
+    console.log(i);
+    i++;
+    if(i==dosage){
+   connection.query('SELECT * FROM prescription WHERE id=1', function (error, results, fields) {
+    if (error) throw error;
+    maxtime=results[0].period*3600;
+    document.getElementById('instr') = results[0].instruction;
+    document.getElementById('drug') = results[0].drugtype;
+    dosage=results[0].dosage;
+    });
+    maxtime=20;
+    clearInterval(dis);
+    timer = setInterval("CountDown()",1000); 
+    i=0;
+    };
+    });
+    emitter.emit(servo(), last_use);
+//4.need button2.js to detect pusher movements
+};
+    
+ 
+function CountDown(){
+if (maxtime>=0){
+  hours = Math.floor(maxtime/3600);
+  minutes = Math.floor((maxtime%3600)/60); 
+  seconds = Math.floor((maxtime%3600)%60); 
+  lefttime = "Time left for the next pill is"+" "+hours+":"+minutes+":"+seconds;
+  document.getElementById("time").innerHTML=lefttime;
+  --maxtime;}
+  else{
+  clearInterval(timer);
+  dis=setInterval("fpidentify(0)",6000);
+};
+};
+
+timer = setInterval("CountDown()",1000);
+</SCRIPT> 
+<p1 id="time"></p1> <br/>
+<p2 id="drug">Oxycodone 40 mg</p2> <br/>
+Insructions:<p3 id="instr">2 tablets every 6 hours as needed for pain</p3><p6><a href="Menu.html"><img width=50 height=50 ondragstart="return false" src="menu.png"></a></p6><br/>
+Physician: <p5 id="phy">Martha Jones, MD</p5>
+</body>
+</html>
