@@ -1,5 +1,5 @@
 # PICARD
 
-Firt programming project
+Firt Software project
 
 Javascript, Node.js, Electron
